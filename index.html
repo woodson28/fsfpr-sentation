@@ -1520,7 +1520,7 @@ window.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <script>
-// ── MOT SECRET "fsf" - PANIQUE ROUGE ──────────────────────────────────
+// ── MOT SECRET "fsf" ──────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', function() {
   var SECRET = 'fsf';
   var typed = '';
@@ -1531,14 +1531,11 @@ window.addEventListener('DOMContentLoaded', function() {
     if (panicActive) return;
     panicActive = true;
 
-    // Overlay rouge clignotant
     var overlay = document.createElement('div');
-    overlay.id = '_panic_overlay';
     overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(180,0,0,0);z-index:3000;pointer-events:none;transition:background 0.3s;';
     document.body.appendChild(overlay);
     setTimeout(function(){ overlay.style.background = 'rgba(180,0,0,0.55)'; }, 10);
 
-    // Clignotement rouge
     var blinkCount = 0;
     var blink = setInterval(function(){
       blinkCount++;
@@ -1546,109 +1543,61 @@ window.addEventListener('DOMContentLoaded', function() {
       if (blinkCount > 20) clearInterval(blink);
     }, 180);
 
-    // Message d'alerte
-    var alert = document.createElement('div');
-    alert.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#8b0000;color:#fff;font-family:monospace;font-size:1.4rem;font-weight:bold;padding:24px 40px;border:3px solid #ff0000;z-index:9999;text-align:center;letter-spacing:3px;box-shadow:0 0 40px #ff0000;';
-    alert.innerHTML = '⚠️ ALERTE FSF ⚠️<br><span style="font-size:0.7rem;opacity:0.8">TOUS LES ÉLÉMENTS FUIENT</span>';
-    document.body.appendChild(alert);
+    var msg = document.createElement('div');
+    msg.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:#8b0000;color:#fff;font-family:monospace;font-size:1.1rem;font-weight:bold;padding:28px 44px;border:3px solid #ff0000;z-index:9999;text-align:center;letter-spacing:2px;box-shadow:0 0 60px #ff0000;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);max-width:480px;line-height:1.7;';
+    msg.innerHTML = "⚠️ ALERTE FSF ⚠️<br><span style='font-size:0.75rem;display:block;margin-top:10px;line-height:1.8;'>LIBÉREZ COCO !<br>RENDEZ-LUI CES HEURES !<br><em style='color:#ffaaaa;'>Coco innocent — victime de la grande matriarche S</em><br><strong style='color:#ff4444;'>FUYEZ TANT QU’IL EST ENCORE TEMPS !</strong></span>";
+    document.body.appendChild(msg);
+    setTimeout(function(){ msg.style.transform = 'translate(-50%,-50%) scale(1)'; }, 50);
 
-    // Récupère tous les textes visibles et les fait fuir
-    var sels = ['h1','h2','h3','p','.card','.tag','.highlight-box',
-                '.text-block','.subtitle','.timeline-item','.fsf-logo',
-                '.film-strip','.divider','.slide-counter'];
+    var sels = ['h1','h2','h3','p','.card','.tag','.highlight-box','.text-block','.subtitle','.timeline-item','.fsf-logo','.film-strip','.divider'];
     var escaped = [];
-
     sels.forEach(function(sel){
       document.querySelectorAll(sel).forEach(function(el){
         var r = el.getBoundingClientRect();
-        if (!r.width || !r.height || r.width > window.innerWidth * 0.95) return;
-
-        // Sauvegarde AVANT toute modification
+        if (!r.width || !r.height || r.width > window.innerWidth*0.95) return;
         var orig = el.style.cssText;
-
-        el.style.position = 'fixed';
-        el.style.left = r.left + 'px';
-        el.style.top = r.top + 'px';
-        el.style.width = r.width + 'px';
-        el.style.zIndex = '3500';
-        el.style.margin = '0';
-        el.style.color = '#ff' + Math.floor(Math.random()*99).toString(16).padStart(2,'0') + '00';
-        el.style.textShadow = '0 0 10px #ff0000';
-
-        // Fuite vers les bords
-        var x = r.left, y = r.top;
-        var W = window.innerWidth, H = window.innerHeight;
-        // Direction aléatoire vers l'extérieur
-        var angle = Math.random() * Math.PI * 2;
-        var speed = 3 + Math.random() * 5;
-        var vx = Math.cos(angle) * speed;
-        var vy = Math.sin(angle) * speed;
-        var rot = 0, vrot = (Math.random()-0.5) * 8;
-        var offscreen = false;
-
-        var raf;
+        el.style.position='fixed'; el.style.left=r.left+'px'; el.style.top=r.top+'px';
+        el.style.width=r.width+'px'; el.style.zIndex='3500'; el.style.margin='0';
+        el.style.color='#ff2200'; el.style.textShadow='0 0 10px #ff0000';
+        var x=r.left, y=r.top, vx=(Math.random()-0.5)*6+2, vy=(Math.random()-0.5)*6, rot=0, vr=(Math.random()-0.5)*8;
+        var W=window.innerWidth, H=window.innerHeight, w=r.width, h=r.height;
+        var gone=false;
         (function tick(){
-          if (offscreen) return;
-          x += vx; y += vy; rot += vrot;
-          // Accélère comme si paniqué
-          vx *= 1.015; vy *= 1.015;
-          el.style.left = x + 'px';
-          el.style.top = y + 'px';
-          el.style.transform = 'rotate(' + rot + 'deg)';
-          // Disparaît hors écran
-          if (x < -r.width*2 || x > W+r.width*2 || y < -r.height*2 || y > H+r.height*2) {
-            el.style.opacity = '0';
-            offscreen = true;
-            return;
-          }
-          raf = requestAnimationFrame(tick);
+          if(gone) return;
+          x+=vx; y+=vy; rot+=vr; vx*=1.015; vy*=1.015;
+          el.style.left=x+'px'; el.style.top=y+'px'; el.style.transform='rotate('+rot+'deg)';
+          if(x<-w*2||x>W+w*2||y<-h*2||y>H+h*2){ el.style.opacity='0'; gone=true; return; }
+          requestAnimationFrame(tick);
         })();
-        escaped.push({ el: el, orig: orig, raf: raf });
+        escaped.push({el:el, orig:orig});
       });
     });
 
-    // Restauration après 4 secondes
     setTimeout(function(){
-      // Fade out overlay
-      overlay.style.transition = 'background 1s';
-      overlay.style.background = 'rgba(180,0,0,0)';
-      alert.style.transition = 'opacity 0.5s';
-      alert.style.opacity = '0';
+      overlay.style.transition='background 1s'; overlay.style.background='rgba(180,0,0,0)';
+      msg.style.transform='translate(-50%,-50%) scale(0)'; msg.style.opacity='0';
       setTimeout(function(){
-        overlay.remove();
-        alert.remove();
-      }, 1000);
-
-      // Restore elements
-      escaped.forEach(function(item){
-        item.el.style.cssText = item.orig;
-        item.el.style.color = '';
-        item.el.style.textShadow = '';
-        item.el.style.opacity = '';
-        item.el.style.position = '';
-        item.el.style.left = '';
-        item.el.style.top = '';
-        item.el.style.width = '';
-        item.el.style.zIndex = '';
-        item.el.style.margin = '';
-        item.el.style.transform = '';
-      });
-
-      panicActive = false;
-    }, 4000);
+        overlay.remove(); msg.remove();
+        escaped.forEach(function(item){
+          item.el.style.cssText = item.orig;
+          item.el.style.color=''; item.el.style.textShadow='';
+          item.el.style.position=''; item.el.style.left=''; item.el.style.top='';
+          item.el.style.width=''; item.el.style.zIndex=''; item.el.style.margin='';
+          item.el.style.transform=''; item.el.style.opacity='';
+        });
+        panicActive=false;
+      }, 600);
+    }, 8000);
   }
 
   document.addEventListener('keyup', function(e) {
     var ch = e.key && e.key.length===1 ? e.key.toLowerCase() : '';
     if (!ch) return;
     typed += ch;
-    if (typed.length > SECRET.length) typed = typed.slice(-SECRET.length);
+    if (typed.length > 20) typed = typed.slice(-20);
     clearTimeout(timer);
-    timer = setTimeout(function(){ typed=''; }, 1500);
-    if (typed === SECRET) {
-      typed = '';
-      launchPanic();
-    }
+    timer = setTimeout(function(){ typed=''; }, 2000);
+    if (typed.endsWith(SECRET)) { typed=''; launchPanic(); }
   });
 });
 </script>
